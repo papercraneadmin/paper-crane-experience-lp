@@ -37,6 +37,18 @@ canvas {
   /* Let clicks pass through to UI unless specific 3D interaction needed */
 }
 
+/* Hide scrollbar on Lenis wrapper */
+[data-lenis-prevent],
+html.lenis {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-lenis-prevent]::-webkit-scrollbar,
+html.lenis::-webkit-scrollbar {
+  display: none;
+}
+
 /* Utility for hiding scrollbar but allowing scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

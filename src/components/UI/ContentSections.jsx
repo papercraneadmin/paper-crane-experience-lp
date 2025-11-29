@@ -50,9 +50,6 @@ const Section = ({ children, id, onEnter, index, triggerId }) => {
         const content = contentRef.current
         if (!content) return
 
-        // Set initial state
-        gsap.set(content, { opacity: 0 })
-
         const trigger = ScrollTrigger.create({
             trigger: `#${triggerId}`,
             start: 'top center',
@@ -98,7 +95,7 @@ const Section = ({ children, id, onEnter, index, triggerId }) => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 padding: '2rem',
-                pointerEvents: isActive ? 'auto' : 'none',
+                pointerEvents: 'none',
                 opacity: isActive ? 1 : 0,
                 transition: 'opacity 0.3s ease',
                 zIndex: isActive ? 2 : 1,
@@ -111,6 +108,7 @@ const Section = ({ children, id, onEnter, index, triggerId }) => {
                     color: 'white',
                     textAlign: 'center',
                     maxWidth: '900px',
+                    opacity: 0
                 }}
             >
                 {children}
@@ -141,6 +139,7 @@ export default function ContentSections({ onSectionChange }) {
                 width: '100%',
                 height: '100vh',
                 zIndex: 10,
+                pointerEvents: 'none'
             }}>
                 {/* Hero Section */}
                 <Section id="hero" onEnter={onSectionChange} index={0} triggerId="trigger-hero">
@@ -381,7 +380,9 @@ export default function ContentSections({ onSectionChange }) {
                             borderRadius: '1px',
                             transition: 'all 0.3s ease',
                             letterSpacing: '0.05em',
-                            border: '1px solid rgba(255, 255, 255, 0.3)'
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            pointerEvents: 'auto',
+                            cursor: 'pointer'
                         }}
                         onMouseEnter={(e) => {
                             e.target.style.borderColor = 'rgba(255, 255, 255, 1)'

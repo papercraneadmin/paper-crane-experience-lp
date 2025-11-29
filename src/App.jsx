@@ -41,7 +41,6 @@ function App() {
         height: '100vh',
         opacity: entered ? 1 : 0,
         transition: 'opacity 2s ease-in-out',
-        pointerEvents: 'none',
         zIndex: 1
       }}>
         <Experience ref={experienceRef} />
