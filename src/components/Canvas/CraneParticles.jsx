@@ -8,14 +8,14 @@ import gsap from 'gsap'
 // hero & cta have low dispersion to show crane shape, middle sections are clouds
 // scale = crane shape size, particleSize handled separately in shader
 const craneStates = {
-    hero: { visible: true, animationSpeed: 0.6, scale: 40.8, opacity: 0.85, dispersion: 0.05, noiseIntensity: 0.02, position: [0, 0.2, -2], rotation: [0.3, -0.5, 0.2] },
-    problem: { visible: true, animationSpeed: 0.7, scale: 29.4, opacity: 0.55, dispersion: 0.4, noiseIntensity: 0.1, position: [-0.5, 0, -2.5], rotation: [0.2, -0.3, 0.1] },
-    team: { visible: true, animationSpeed: 1.0, scale: 32.6, opacity: 0.7, dispersion: 0.3, noiseIntensity: 0.08, position: [0, 0.2, -2], rotation: [0.25, -0.4, 0.15] },
-    philosophy: { visible: true, animationSpeed: 0.5, scale: 35.9, opacity: 0.6, dispersion: 0.55, noiseIntensity: 0.18, position: [0.3, 0.5, -2.5], rotation: [0.35, -0.6, 0.25] },
-    services: { visible: true, animationSpeed: 0.6, scale: 29.4, opacity: 0.5, dispersion: 0.45, noiseIntensity: 0.14, position: [0, 0.2, -2.5], rotation: [0.2, -0.4, 0.1] },
-    process: { visible: true, animationSpeed: 0.8, scale: 29.4, opacity: 0.6, dispersion: 0.35, noiseIntensity: 0.1, position: [0.5, 0.3, -2], rotation: [0.25, -0.35, 0.15] },
-    quote: { visible: true, animationSpeed: 0.4, scale: 32.6, opacity: 0.5, dispersion: 0.65, noiseIntensity: 0.22, position: [0, 0.6, -3], rotation: [0.3, -0.5, 0.2] },
-    cta: { visible: true, animationSpeed: 0.8, scale: 45.7, opacity: 0.9, dispersion: 0.05, noiseIntensity: 0.02, position: [0, 0.1, -1.5], rotation: [0.3, -0.5, 0.2] }
+    hero: { visible: true, animationSpeed: 1.8, scale: 40.8, opacity: 0.85, dispersion: 0.05, noiseIntensity: 0.02, position: [0, 0.2, -2], rotation: [0.8, -0.5, 0.15] },
+    problem: { visible: true, animationSpeed: 1.5, scale: 29.4, opacity: 0.55, dispersion: 0.4, noiseIntensity: 0.1, position: [-0.5, 0, -2.5], rotation: [0.7, -0.3, 0.1] },
+    team: { visible: true, animationSpeed: 2.0, scale: 32.6, opacity: 0.7, dispersion: 0.3, noiseIntensity: 0.08, position: [0, 0.2, -2], rotation: [0.75, -0.4, 0.12] },
+    philosophy: { visible: true, animationSpeed: 1.2, scale: 35.9, opacity: 0.6, dispersion: 0.55, noiseIntensity: 0.18, position: [0.3, 0.5, -2.5], rotation: [0.85, -0.6, 0.2] },
+    services: { visible: true, animationSpeed: 1.5, scale: 29.4, opacity: 0.5, dispersion: 0.45, noiseIntensity: 0.14, position: [0, 0.2, -2.5], rotation: [0.7, -0.4, 0.1] },
+    process: { visible: true, animationSpeed: 1.8, scale: 29.4, opacity: 0.6, dispersion: 0.35, noiseIntensity: 0.1, position: [0.5, 0.3, -2], rotation: [0.75, -0.35, 0.12] },
+    quote: { visible: true, animationSpeed: 1.0, scale: 32.6, opacity: 0.5, dispersion: 0.65, noiseIntensity: 0.22, position: [0, 0.6, -3], rotation: [0.8, -0.5, 0.15] },
+    cta: { visible: true, animationSpeed: 2.0, scale: 45.7, opacity: 0.9, dispersion: 0.05, noiseIntensity: 0.02, position: [0, 0.1, -1.5], rotation: [0.8, -0.5, 0.15] }
 }
 
 // Number of keyframes to sample from the animation
@@ -340,7 +340,55 @@ const CraneParticles = forwardRef((props, ref) => {
 
         // Limit particle count for performance
         const particleCount = Math.min(vertexCount, MAX_PARTICLES)
-        const stride = Math.ceil(vertexCount / particleCount)
+
+        // Build weighted sampling for wing vertices (larger |x| values)
+        // First pass: analyze vertex positions to find X bounds
+        const posAttr = geometry.attributes.position
+        let minX = Infinity, maxX = -Infinity
+        for (let i = 0; i < vertexCount; i++) {
+            const x = posAttr.getX(i)
+            minX = Math.min(minX, x)
+            maxX = Math.max(maxX, x)
+        }
+        const xRange = maxX - minX
+        const wingThreshold = xRange * 0.2 // Vertices beyond 20% from center are "wing"
+        const centerX = (minX + maxX) / 2
+
+        // Create particle entries with index and optional offset for wing spread
+        const particleEntries = [] // { index, offsetX, offsetY, offsetZ }
+        for (let i = 0; i < vertexCount; i++) {
+            const x = posAttr.getX(i)
+            const distFromCenter = Math.abs(x - centerX)
+            const isWing = distFromCenter > wingThreshold
+
+            // Base particle (no offset)
+            particleEntries.push({ index: i, offsetX: 0, offsetY: 0, offsetZ: 0 })
+
+            // Wing particles get extra samples with random spread
+            if (isWing) {
+                const spreadAmount = 0.015 // Spread radius in model units
+                for (let w = 0; w < 8; w++) {
+                    // Deterministic "random" offsets based on vertex and iteration
+                    const seed1 = seededRandom(i * 100 + w * 7)
+                    const seed2 = seededRandom(i * 100 + w * 13 + 50)
+                    const seed3 = seededRandom(i * 100 + w * 19 + 100)
+                    particleEntries.push({
+                        index: i,
+                        offsetX: (seed1 - 0.5) * spreadAmount,
+                        offsetY: (seed2 - 0.5) * spreadAmount,
+                        offsetZ: (seed3 - 0.5) * spreadAmount
+                    })
+                }
+            }
+        }
+
+        // Sample from entries with deterministic selection
+        const selectedEntries = []
+        const step = particleEntries.length / particleCount
+        for (let i = 0; i < particleCount; i++) {
+            const idx = Math.floor(i * step)
+            selectedEntries.push(particleEntries[idx])
+        }
 
         // Sample keyframes from the animation
         const duration = clip.duration
@@ -371,12 +419,14 @@ const CraneParticles = forwardRef((props, ref) => {
                 const fullNormals = new Float32Array(vertexCount * 3)
                 sampleSkinnedMesh(sampleMesh, sampleSkeleton, clip, time, fullPositions, fullNormals)
 
-                // Subsample for particle count
+                // Use weighted entries for particle sampling (with spread offsets)
                 for (let i = 0; i < particleCount; i++) {
-                    const srcIdx = Math.min(i * stride, vertexCount - 1)
-                    positions[i * 3] = fullPositions[srcIdx * 3]
-                    positions[i * 3 + 1] = fullPositions[srcIdx * 3 + 1]
-                    positions[i * 3 + 2] = fullPositions[srcIdx * 3 + 2]
+                    const entry = selectedEntries[i]
+                    const srcIdx = entry.index
+                    // Apply position with spread offset for wing particles
+                    positions[i * 3] = fullPositions[srcIdx * 3] + entry.offsetX
+                    positions[i * 3 + 1] = fullPositions[srcIdx * 3 + 1] + entry.offsetY
+                    positions[i * 3 + 2] = fullPositions[srcIdx * 3 + 2] + entry.offsetZ
                     normals[i * 3] = fullNormals[srcIdx * 3]
                     normals[i * 3 + 1] = fullNormals[srcIdx * 3 + 1]
                     normals[i * 3 + 2] = fullNormals[srcIdx * 3 + 2]
@@ -462,21 +512,36 @@ const CraneParticles = forwardRef((props, ref) => {
         }
     }, [keyframePositions])
 
+    // Base rotation values (updated on state transitions)
+    const baseRotation = useRef(new THREE.Vector3(...craneStates.hero.rotation))
+
     useFrame((state) => {
         if (!meshRef.current || !particleData) return
 
         const { clock, pointer } = state
         const material = meshRef.current.material
         const geometry = meshRef.current.geometry
+        const elapsed = clock.getElapsedTime()
 
         // Update time
-        material.uniforms.uTime.value = clock.getElapsedTime()
+        material.uniforms.uTime.value = elapsed
 
         // Smooth mouse lerp
         material.uniforms.uMouse.value.lerp(pointer, 0.1)
 
         // Update viewport
         material.uniforms.uViewport.value.set(state.viewport.width, state.viewport.height)
+
+        // Slow continuous rotation drift
+        const rotationDrift = elapsed * 0.03 // Very slow Y rotation
+        const wobbleX = Math.sin(elapsed * 0.15) * 0.05 // Subtle pitch wobble
+        const wobbleZ = Math.cos(elapsed * 0.12) * 0.03 // Subtle roll wobble
+
+        material.uniforms.uRotation.value.set(
+            baseRotation.current.x + wobbleX,
+            baseRotation.current.y + rotationDrift,
+            baseRotation.current.z + wobbleZ
+        )
 
         // Animate through keyframes based on animation speed
         const anim = animationState.current
@@ -522,9 +587,9 @@ const CraneParticles = forwardRef((props, ref) => {
                 })
             }
 
-            // Animate rotation
+            // Update base rotation for continuous drift
             if (state.rotation) {
-                gsap.to(uniforms.uRotation.value, {
+                gsap.to(baseRotation.current, {
                     x: state.rotation[0],
                     y: state.rotation[1],
                     z: state.rotation[2],

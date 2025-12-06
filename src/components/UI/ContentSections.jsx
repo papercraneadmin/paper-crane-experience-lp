@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import ScrollIndicator from './ScrollIndicator'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -164,6 +165,8 @@ export default function ContentSections({ onSectionChange }) {
                     </p>
                 </Section>
 
+                <ScrollIndicator />
+
                 {/* Problem Section */}
                 <Section id="problem" onEnter={onSectionChange} index={1} triggerId="trigger-problem">
                     <h2 style={{
@@ -196,8 +199,7 @@ export default function ContentSections({ onSectionChange }) {
                         letterSpacing: '-0.02em',
                         lineHeight: 1.2
                     }}>
-                        More eyes.<br/>
-                        Clearer vision.
+                        Partners, not vendors.
                     </h2>
                     <p style={{
                         fontSize: 'clamp(1.1rem, 2vw, 1.5rem)',
