@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run lint)",
-      "Bash(find src/components/UI/ContentSections.jsx -type f -exec grep -n \"fontWeight: [89]00\" {} +)"
+      "Bash(find src/components/UI/ContentSections.jsx -type f -exec grep -n \"fontWeight: [89]00\" {} +)",
+      "Bash(npx gltf-transform inspect:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

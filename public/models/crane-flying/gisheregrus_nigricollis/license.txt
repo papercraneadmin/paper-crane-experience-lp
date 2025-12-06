@@ -1,0 +1,8 @@
+Model Information:
+* title:	Gishere—Grus nigricollis
+* source:	https://sketchfab.com/3d-models/gisheregrus-nigricollis-3123f454f87d4be9a1a2df0077a1f672
+* author:	Gishere (https://sketchfab.com/Gishere)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

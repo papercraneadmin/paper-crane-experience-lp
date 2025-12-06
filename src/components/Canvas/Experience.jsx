@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, Suspense } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import EtherealParticles from './EtherealParticles'
+import CraneParticles from './CraneParticles'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -33,12 +34,16 @@ function CameraController() {
 
 // Scene component that holds particles and exposes control
 const Scene = forwardRef((props, ref) => {
-    const particlesRef = useRef()
+    const particlesRef = useRef(null)
+    const craneRef = useRef(null)
 
     useImperativeHandle(ref, () => ({
         transitionToState: (stateName) => {
             if (particlesRef.current) {
                 particlesRef.current.transitionToState(stateName)
+            }
+            if (craneRef.current) {
+                craneRef.current.transitionToState(stateName)
             }
         }
     }))
@@ -50,6 +55,10 @@ const Scene = forwardRef((props, ref) => {
             <pointLight position={[10, 10, 10]} />
 
             <EtherealParticles ref={particlesRef} />
+
+            <Suspense fallback={null}>
+                <CraneParticles ref={craneRef} />
+            </Suspense>
 
             <CameraController />
         </>

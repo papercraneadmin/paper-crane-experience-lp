@@ -259,8 +259,8 @@ export default function ContentSections({ onSectionChange }) {
                     </div>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '3rem',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
+                        gap: '2rem',
                         maxWidth: '800px',
                         margin: '0 auto'
                     }}>
@@ -342,14 +342,14 @@ export default function ContentSections({ onSectionChange }) {
                                 fontWeight: 700,
                                 marginBottom: '0.25rem'
                             }}>
-                                Christopher McGhee
+                                Brendan Collins
                             </p>
                             <p style={{
                                 fontSize: 'clamp(0.9rem, 1.4vw, 1.05rem)',
                                 opacity: 0.6,
                                 fontWeight: 400
                             }}>
-                                Fratello Coffee Roasters
+                                Owner, Melo Mead
                             </p>
                         </div>
                     </div>
