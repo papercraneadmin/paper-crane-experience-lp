@@ -5,7 +5,10 @@
       "Bash(find src/components/UI/ContentSections.jsx -type f -exec grep -n \"fontWeight: [89]00\" {} +)",
       "Bash(npx gltf-transform inspect:*)",
       "Bash(cat:*)",
-      "Skill(frontend-design:frontend-design)"
+      "Skill(frontend-design:frontend-design)",
+      "Skill(example-skills:skill-creator)",
+      "Bash(python3:*)",
+      "Skill(particle-scroll-architect)"
     ],
     "deny": [],
     "ask": []

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { ReactLenis } from 'lenis/react'
+import { ReactLenis, useLenis } from 'lenis/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Experience from './components/Canvas/Experience'
@@ -8,6 +8,15 @@ import ContentSections from './components/UI/ContentSections'
 import { useAudio } from './hooks/useAudio'
 
 gsap.registerPlugin(ScrollTrigger)
+
+// Bridge component to connect Lenis scroll to GSAP ScrollTrigger
+function LenisScrollTriggerBridge() {
+  useLenis(() => {
+    // Update ScrollTrigger on every Lenis scroll frame
+    ScrollTrigger.update()
+  })
+  return null
+}
 
 // Placeholder audio - replace with actual file path
 const AUDIO_URL = '/audio/background_music.mp3'
@@ -20,6 +29,8 @@ function App() {
   const handleEnter = () => {
     setEntered(true)
     toggle()
+    // Refresh ScrollTrigger after content appears (Safari needs this)
+    setTimeout(() => ScrollTrigger.refresh(), 100)
   }
 
   const handleSectionChange = useCallback((sectionId) => {
@@ -30,6 +41,7 @@ function App() {
 
   return (
     <ReactLenis root>
+      <LenisScrollTriggerBridge />
       {!entered && <EnterScreen onEnter={handleEnter} />}
 
       {/* Pure Canvas - Full Screen Background */}
