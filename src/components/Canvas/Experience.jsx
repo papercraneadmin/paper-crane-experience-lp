@@ -11,21 +11,25 @@ function CameraController() {
     const { camera } = useThree()
 
     useEffect(() => {
-        gsap.to(camera.position, {
+        const tween = gsap.to(camera.position, {
             scrollTrigger: {
                 trigger: "body",
                 start: "top top",
                 end: "bottom bottom",
                 scrub: 1,
             },
-            z: 3,
-            x: 1.5,
-            y: 2,
+            z: 4,
+            x: 0.5,
+            y: 0.5,
             ease: "none"
         })
 
         return () => {
-            ScrollTrigger.getAll().forEach(t => t.kill())
+            // Only kill this specific ScrollTrigger, not all of them
+            if (tween.scrollTrigger) {
+                tween.scrollTrigger.kill()
+            }
+            tween.kill()
         }
     }, [camera])
 
