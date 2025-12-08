@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { ReactLenis, useLenis } from 'lenis/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -9,13 +9,54 @@ import { useAudio } from './hooks/useAudio'
 
 gsap.registerPlugin(ScrollTrigger)
 
+// Detect browsers with Lenis issues
+const isProblematicBrowser = () => {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua)
+  const isFirefox = ua.toLowerCase().includes('firefox')
+  return isSafari || isFirefox
+}
+
 // Bridge component to connect Lenis scroll to GSAP ScrollTrigger
 function LenisScrollTriggerBridge() {
   useLenis(() => {
-    // Update ScrollTrigger on every Lenis scroll frame
     ScrollTrigger.update()
   })
   return null
+}
+
+// Wrapper that uses native scroll for problematic browsers
+function ScrollWrapper({ children }) {
+  const useNativeScroll = isProblematicBrowser()
+
+  useEffect(() => {
+    if (useNativeScroll) {
+      // For native scroll, just refresh ScrollTrigger periodically
+      const handleScroll = () => ScrollTrigger.update()
+      window.addEventListener('scroll', handleScroll, { passive: true })
+      return () => window.removeEventListener('scroll', handleScroll)
+    }
+  }, [useNativeScroll])
+
+  if (useNativeScroll) {
+    return <>{children}</>
+  }
+
+  return (
+    <ReactLenis
+      root
+      options={{
+        lerp: 0.1,
+        smoothWheel: true,
+        syncTouch: true,
+        touchMultiplier: 2,
+      }}
+    >
+      <LenisScrollTriggerBridge />
+      {children}
+    </ReactLenis>
+  )
 }
 
 // Placeholder audio - replace with actual file path
@@ -40,8 +81,7 @@ function App() {
   }, [])
 
   return (
-    <ReactLenis root>
-      <LenisScrollTriggerBridge />
+    <ScrollWrapper>
       {!entered && <EnterScreen onEnter={handleEnter} />}
 
       {/* Pure Canvas - Full Screen Background */}
@@ -60,7 +100,7 @@ function App() {
 
       {/* Content Sections Overlay with scroll driver */}
       {entered && <ContentSections onSectionChange={handleSectionChange} />}
-    </ReactLenis>
+    </ScrollWrapper>
   )
 }
 
